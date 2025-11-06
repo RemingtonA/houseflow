@@ -32,7 +32,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             transition={{ delay: 0.2, duration: 0.4 }}
             className="text-center mb-8"
           >
-            <h1 className="text-5xl font-light tracking-tight text-foreground mb-2">
+            <h1 
+              className="text-5xl font-light tracking-tight text-foreground mb-2"
+              style={{ fontFamily: "var(--font-cursive)" }}
+            >
               houseflow
             </h1>
             <p className="text-muted-foreground text-sm">

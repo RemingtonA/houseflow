@@ -1,5 +1,6 @@
 import DashboardLayout from '../DashboardLayout';
 import HouseChain from '../HouseChain';
+import { mockChains } from '@/lib/mockData';
 
 export default function DashboardLayoutExample() {
   return (
@@ -8,7 +9,7 @@ export default function DashboardLayoutExample() {
       houseCount={5}
       onLogout={() => console.log('Logout clicked')}
     >
-      <HouseChain houseCount={5} />
+      <HouseChain chain={mockChains.user1} />
     </DashboardLayout>
   );
 }

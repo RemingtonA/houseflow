@@ -39,7 +39,7 @@ export default function AnimatedLogo({ onComplete }: AnimatedLogoProps) {
               color: { delay: 0.6, duration: 0.3 },
             }}
             className="text-6xl font-light tracking-tight"
-            style={{ fontFamily: "var(--font-sans)" }}
+            style={{ fontFamily: "var(--font-cursive)" }}
           >
             {letter}
           </motion.span>

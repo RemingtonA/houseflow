@@ -16,3 +16,32 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Chain and House types for property chain management
+export type HouseStatus = "complete" | "incomplete" | "pending";
+
+export interface Contact {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  role: "buyer" | "seller" | "agent";
+}
+
+export interface House {
+  id: string;
+  address: string;
+  status: HouseStatus;
+  estateAgent: "Foxton" | "Black Cat" | "Ellis & Co";
+  isUserProperty: boolean;
+  contacts: Contact[];
+}
+
+export interface Chain {
+  id: string;
+  name: string;
+  houses: House[];
+}
+
+export type SelectChain = Chain;
+export type InsertChain = Omit<Chain, "id">;
