@@ -20,7 +20,7 @@ export default function HouseChain({ chain }: HouseChainProps) {
         {chain.name}
       </motion.h2>
 
-      {/* MOBILE: horizontal scroll, snap to each card */}
+      {/* MOBILE: horizontal scroll, snap to sdfs card */}
       <div
         className="
           md:hidden
