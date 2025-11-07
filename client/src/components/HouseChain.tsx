@@ -19,8 +19,46 @@ export default function HouseChain({ chain }: HouseChainProps) {
       >
         {chain.name}
       </motion.h2>
-      
-      <div className="flex items-center justify-center gap-4 flex-wrap">
+
+      {/* MOBILE: horizontal scroll, snap to each card */}
+      <div
+        className="
+          md:hidden
+          -mx-4 px-4
+          overflow-x-auto
+          scroll-smooth
+          snap-x snap-mandatory
+          flex items-stretch gap-3
+          pb-4
+          [scrollbar-width:none] [-ms-overflow-style:none]
+          [&::-webkit-scrollbar]:hidden
+        "
+        aria-label="House chain (horizontal on mobile)"
+      >
+        {houses.map((house, index) => (
+          <div key={house.id} className="flex items-center snap-center shrink-0">
+            {/* Card */}
+            <div className="shrink-0 min-w-[260px] max-w-[85vw]">
+              <HouseCard house={house} index={index} />
+            </div>
+
+            {/* Connector */}
+            {index < houses.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.15 + 0.2, duration: 0.3 }}
+                className="mx-2 shrink-0 self-center"
+              >
+                <SteelChainLink className="w-16 h-10" />
+              </motion.div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* DESKTOP/TABLET: your existing centered, wrapping layout */}
+      <div className="hidden md:flex items-center justify-center gap-4 flex-wrap">
         {houses.map((house, index) => (
           <div key={house.id} className="flex items-center">
             <HouseCard house={house} index={index} />
