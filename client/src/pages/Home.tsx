@@ -26,17 +26,26 @@ export default function Home() {
 
   const isAdmin = currentUser === "admin";
 
+  const MIN_SPLASH_MS = 1200; // tweak to taste (e.g., 1400–1600 on slow phones)
+
   const handleLogin = (username: string) => {
+    const start = Date.now();
     setShowAnimation(true);
+  
+    // Do any init (load chains) synchronously
+    setCurrentUser(username);
+    if (username !== "admin") {
+      setChain(getChainForUser(username));
+    }
+  
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+  
     setTimeout(() => {
-      setCurrentUser(username);
-      if (username !== "admin") {
-        // For normal users, hydrate the single chain
-        setChain(getChainForUser(username));
-      }
       setShowAnimation(false);
-    }, 1700);
+    }, remaining);
   };
+  
 
   const handleLogout = () => {
     setCurrentUser(null);
