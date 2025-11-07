@@ -1,4 +1,4 @@
-import SteelChainLink from '../SteelChainLink';
+import SteelChainLink from "../SteelChainLink";
 
 export default function SteelChainLinkExample() {
   return (

@@ -4,19 +4,36 @@ import AnimatedLogo from "@/components/AnimatedLogo";
 import DashboardLayout from "@/components/DashboardLayout";
 import HouseChain from "@/components/HouseChain";
 import AdminControls from "@/components/AdminControls";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getChainForUser } from "@/lib/mockData";
 import type { Chain, House, HouseStatus } from "@shared/schema";
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
+
+  // Non-admin single chain (used when logged in as a normal user)
   const [chain, setChain] = useState<Chain | null>(null);
+
+  // Admin-only: currently selected user tab (user1 | user2)
+  const [activeUserForAdmin, setActiveUserForAdmin] = useState<"user1" | "user2">("user1");
+
+  // Admin-only: keep both users' chains in local state
+  const [adminChains, setAdminChains] = useState<Record<"user1" | "user2", Chain>>({
+    user1: getChainForUser("user1"),
+    user2: getChainForUser("user2"),
+  });
+
+  const isAdmin = currentUser === "admin";
 
   const handleLogin = (username: string) => {
     setShowAnimation(true);
     setTimeout(() => {
       setCurrentUser(username);
-      setChain(getChainForUser(username));
+      if (username !== "admin") {
+        // For normal users, hydrate the single chain
+        setChain(getChainForUser(username));
+      }
       setShowAnimation(false);
     }, 1700);
   };
@@ -26,21 +43,33 @@ export default function Home() {
     setChain(null);
   };
 
+  // Helpers to read/write the "active" chain depending on admin vs user
+  const activeChain: Chain | null = isAdmin ? adminChains[activeUserForAdmin] : chain;
+
+  const updateActiveAdminChain = (updater: (c: Chain) => Chain) => {
+    setAdminChains((prev) => {
+      const curr = prev[activeUserForAdmin];
+      const updated = updater(curr);
+      return { ...prev, [activeUserForAdmin]: updated };
+    });
+  };
+
   const handleStatusChange = (houseId: string, newStatus: HouseStatus) => {
+    if (isAdmin) {
+      updateActiveAdminChain((c) => ({
+        ...c,
+        houses: c.houses.map((h) => (h.id === houseId ? { ...h, status: newStatus } : h)),
+      }));
+      return;
+    }
     if (!chain) return;
-    
-    const updatedChain = {
+    setChain({
       ...chain,
-      houses: chain.houses.map(house =>
-        house.id === houseId ? { ...house, status: newStatus } : house
-      )
-    };
-    setChain(updatedChain);
+      houses: chain.houses.map((h) => (h.id === houseId ? { ...h, status: newStatus } : h)),
+    });
   };
 
   const handleAddHouse = (address: string, estateAgent: "Foxton" | "Black Cat" | "Ellis & Co") => {
-    if (!chain) return;
-    
     const newHouse: House = {
       id: `house-new-${Date.now()}`,
       address,
@@ -51,48 +80,84 @@ export default function Home() {
         {
           id: `contact-new-${Date.now()}`,
           name: "New Contact",
-          phone: "+44 20 7946 0000",
+          phone: "+44 20 0000 0000",
           email: "contact@example.com",
-          role: "buyer"
-        }
-      ]
+          role: "agent",
+        },
+      ],
     };
-    
-    const updatedChain = {
-      ...chain,
-      houses: [...chain.houses, newHouse]
-    };
-    setChain(updatedChain);
+
+    if (isAdmin) {
+      updateActiveAdminChain((c) => ({ ...c, houses: [...c.houses, newHouse] }));
+      return;
+    }
+    if (!chain) return;
+    setChain({ ...chain, houses: [...chain.houses, newHouse] });
   };
 
-  if (showAnimation) {
-    return <AnimatedLogo onComplete={() => {}} />;
-  }
+  // NEW: Admin-only "New chain" action — clears the current tab's chain
+  const handleNewChain = () => {
+    if (!isAdmin) return;
+    updateActiveAdminChain((c) => ({
+      ...c,
+      // preserve any required top-level fields; just reset the houses array
+      houses: [],
+    }));
+  };
 
-  if (!currentUser || !chain) {
+  // Gate: login / splash animation
+  if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
   }
+  if (showAnimation) {
+    return <AnimatedLogo />;
+  }
 
-  const isAdmin = currentUser === "admin";
+  // Safety: if somehow we have no chain loaded yet
+  if (!activeChain) {
+    return (
+      <DashboardLayout
+        username={currentUser}
+        houseCount={0}
+        onLogout={handleLogout}
+        isAdmin={isAdmin}
+        onNewChain={isAdmin ? handleNewChain : undefined}  // NEW
+      >
+        <div className="text-center text-muted-foreground">No chain data available.</div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout
       username={currentUser}
-      houseCount={chain.houses.length}
+      houseCount={activeChain.houses.length}
       onLogout={handleLogout}
       isAdmin={isAdmin}
-      houses={chain.houses}
+      houses={activeChain.houses}
+      onNewChain={isAdmin ? handleNewChain : undefined}  // NEW
       adminControls={
         isAdmin ? (
           <AdminControls
-            houses={chain.houses}
+            houses={activeChain.houses}
             onStatusChange={handleStatusChange}
             onAddHouse={handleAddHouse}
           />
         ) : undefined
       }
     >
-      <HouseChain chain={chain} />
+      {isAdmin && (
+        <div className="mb-6">
+          <Tabs value={activeUserForAdmin} onValueChange={(v) => setActiveUserForAdmin(v as "user1" | "user2")}>
+            <TabsList>
+              <TabsTrigger value="user1">user1 chain</TabsTrigger>
+              <TabsTrigger value="user2">user2 chain</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+
+      <HouseChain chain={activeChain} />
     </DashboardLayout>
   );
 }

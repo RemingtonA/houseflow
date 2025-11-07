@@ -20,6 +20,7 @@ interface DashboardLayoutProps {
   isAdmin?: boolean;
   houses?: House[];
   adminControls?: React.ReactNode;
+  onNewChain?: () => void; // NEW: optional admin action
 }
 
 export default function DashboardLayout({
@@ -30,6 +31,7 @@ export default function DashboardLayout({
   isAdmin = false,
   houses = [],
   adminControls,
+  onNewChain, // NEW
 }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen bg-white">
@@ -52,10 +54,25 @@ export default function DashboardLayout({
           <div className="space-y-4">
             <div className="bg-white/50 rounded-md p-4 border border-[#F0F0F0]">
               <p className="text-sm text-muted-foreground">Properties</p>
-              <p className="text-2xl font-semibold text-foreground mt-1" data-testid="text-property-count">
+              <p
+                className="text-2xl font-semibold text-foreground mt-1"
+                data-testid="text-property-count"
+              >
                 {houseCount}
               </p>
             </div>
+
+            {/* NEW: Admin-only "New chain" action in the sidebar */}
+            {isAdmin && onNewChain && (
+              <Button
+                variant="outline"
+                className="w-full rounded-full"
+                onClick={onNewChain}
+                data-testid="button-new-chain"
+              >
+                + New chain
+              </Button>
+            )}
 
             {isAdmin && houses.length > 0 && (
               <Sheet>
@@ -88,11 +105,17 @@ export default function DashboardLayout({
         <div className="p-6 border-t border-[#F0F0F0]">
           <div className="mb-4">
             <p className="text-xs text-muted-foreground mb-1">Signed in as</p>
-            <p className="text-sm font-medium text-foreground" data-testid="text-username">
+            <p
+              className="text-sm font-medium text-foreground"
+              data-testid="text-username"
+            >
               {username}
             </p>
             {isAdmin && (
-              <p className="text-xs text-primary mt-1" data-testid="text-admin-badge">
+              <p
+                className="text-xs text-primary mt-1"
+                data-testid="text-admin-badge"
+              >
                 Administrator
               </p>
             )}
@@ -129,7 +152,7 @@ export default function DashboardLayout({
               {adminControls}
             </motion.div>
           )}
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
